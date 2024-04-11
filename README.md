@@ -47,7 +47,7 @@ Dynamic SEO Tags is designed to work seamlessly with Yoast SEO. When Yoast SEO i
 ### Enhanced Functionality with Yoast SEO
 If Yoast SEO is active, Dynamic SEO Tags will use Yoast's advanced filters to manipulate SEO tags directly, providing a more integrated and powerful SEO management experience. If Yoast SEO is not active, Dynamic SEO Tags will still operate effectively by providing fallback mechanisms for essential SEO tags like the title and meta description.
 
-## How It Works with Yoast SEO
+### How It Works with Yoast SEO
 When Yoast SEO is detected:
 - The plugin adds custom dynamic data to the SEO titles, descriptions, canonical URLs, OpenGraph titles, descriptions, URLs, and Twitter metadata.
 - This data is injected dynamically based on the URL parameters specified by the user in the plugin's settings.
@@ -58,7 +58,7 @@ If Yoast SEO is not detected:
 ### Installing Yoast SEO
 For optimal functionality, it is recommended to install Yoast SEO. You can download and install Yoast SEO directly from the WordPress plugin repository or by visiting [Yoast SEO Plugin Page](https://yoast.com/wordpress/plugins/seo/).
 
-## Note on Yoast SEO Integration
+### Note on Yoast SEO Integration
 While Dynamic SEO Tags enhances and relies on Yoast SEO for advanced features, it maintains core functionality independently, ensuring that your site's SEO is not compromised even in the absence of Yoast SEO.
 
 ## Usage
