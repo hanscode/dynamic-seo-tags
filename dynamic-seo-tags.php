@@ -35,17 +35,19 @@ function dynamic_seo_tags_page()
             <table class="form-table">
                 <tr valign="top">
                     <th scope="row">Variable Name</th>
-                    <td><input type="text" name="seo_variable_name" value="<?php echo get_option('seo_variable_name'); ?>" /></td>
+                    <td><input style="width:50%;" type="text" name="seo_variable_name" value="<?php echo get_option('seo_variable_name'); ?>" /></td>
                 </tr>
 
                 <tr valign="top">
                     <th scope="row">SEO Meta Description</th>
-                    <td><input type="text" name="seo_custom_text" value="<?php echo esc_attr(get_option('seo_custom_text')); ?>" /></td>
+                    <td>
+						<textarea name="seo_custom_text" rows="5" cols="50"><?php echo esc_textarea(get_option('seo_custom_text')); ?></textarea>
+					</td>
                 </tr>
 
                 <tr valign="top">
                     <th scope="row">SEO Meta Title</th>
-                    <td><input type="text" name="seo_custom_title" value="<?php echo esc_attr(get_option('seo_custom_title')); ?>" /></td>
+                    <td><input style="width:50%;" type="text" name="seo_custom_title" value="<?php echo esc_attr(get_option('seo_custom_title')); ?>" /></td>
                 </tr>
 
             </table>
@@ -77,7 +79,9 @@ function dynamic_seo_canonical($canonical) {
 function dynamic_seo_tags_replace($type, $content, $is_url = false) {
     $variable_name = get_option('seo_variable_name');
     if (isset($_GET[$variable_name])) {
-        $variable_value = htmlspecialchars($_GET[$variable_name], ENT_QUOTES, 'UTF-8');
+		$variable_value_raw = $_GET[$variable_name];
+		// Replace dashes with spaces and capitalize each word
+        $variable_value = htmlspecialchars(ucwords(str_replace('-', ' ', $variable_value_raw)), ENT_QUOTES, 'UTF-8');
         
         // Decide which custom text to use based on the type
         $custom_text = ($type == 'title') ? get_option('seo_custom_title') : get_option('seo_custom_text');
@@ -87,7 +91,7 @@ function dynamic_seo_tags_replace($type, $content, $is_url = false) {
             $content = str_replace("[$variable_name]", $variable_value, $custom_text);
         } else {
             // For canonical URL, append or modify the query parameter
-            $content = add_query_arg($variable_name, $variable_value, $content);
+            $content = add_query_arg($variable_name, $variable_value_raw, $content); // Use raw value for URLs
         }
     }
     return $content;
