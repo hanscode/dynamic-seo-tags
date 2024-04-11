@@ -6,6 +6,8 @@
  * Version: 1.0
  * Author: Hans Steffens & Marketing Done Right LLC
  * Author URI:  https://marketingdr.co
+ * License: GPL v3 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
 
 // Add the action to set the SEO tags
