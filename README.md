@@ -5,7 +5,7 @@
 - The folks behind [Marketing Done Right, LLC](https://marketingdr.co/)
 
 ## Description
-Dynamic SEO Tags is a WordPress plugin designed to dynamically set SEO meta tags based on URL parameters. This plugin compatible with the popular Yoast SEO Plugin and provides a robust fallback mechanisms in case Yoast SEO is not installed, ensuring that SEO is effectively managed with or without Yoast SEO.
+Dynamic SEO Tags is a WordPress plugin designed to dynamically set SEO meta tags based on URL parameters. This plugin is compatible with the popular Yoast SEO Plugin and provides a robust fallback mechanisms in case Yoast SEO is not installed, ensuring that SEO is effectively managed with or without Yoast SEO.
 
 The plugin allows users to specify custom placeholders within the SEO meta tags that can be replaced dynamically based on the value of URL parameters, enhancing the relevance and specificity of SEO on a per-page basis.
 
@@ -32,8 +32,8 @@ This plugin adheres to best security practices, including:
 ### Configuring the Plugin
 After activation, it's important to configure the plugin to ensure it operates correctly with your site's SEO strategy:
 
-- Variable Name: Navigate to the plugin's settings page and enter the URL parameter name that you want the plugin to dynamically replace in your site's SEO meta tags.
-- SEO Meta Description and Title: Set up templates for your SEO meta description and title. Use the specified placeholder (e.g., `[variable]`) to mark where the dynamic content should be inserted.
+- **Variable Name**: Navigate to the plugin's settings page and enter the URL parameter name that you want the plugin to dynamically replace in your site's SEO meta tags.
+- **SEO Meta Description and Title:** Set up templates for your SEO meta description and title. Use the specified placeholder (e.g., `[variable]`) to mark where the dynamic content should be inserted.
 
 By configuring these settings, you tailor the Dynamic SEO Tags plugin to your site's specific needs, enhancing your SEO dynamically based on URL parameters.
 
