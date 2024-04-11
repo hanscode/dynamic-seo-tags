@@ -2,19 +2,23 @@
 
 /**
  * Plugin Name: Dynamic SEO Tags
- * Description: Dynamically set SEO meta tags based on URL parameters.
+ * Description: Dynamically set SEO meta tags based on URL parameters, with fallbacks if Yoast SEO is not installed.
  * Version: 1.0
  * Author: Hans Steffens & Marketing Done Right LLC
  * Author URI:  https://marketingdr.co
  */
 
 // Add the action to set the SEO tags
-add_action('admin_menu', 'dynamic_seo_tags_menu');
-
-function dynamic_seo_tags_menu()
-{
-    add_menu_page('Dynamic SEO Tags', 'SEO Tags', 'manage_options', 'dynamic-seo-tags', 'dynamic_seo_tags_page', null, 99);
+function dynamic_seo_tags_menu() {
+    add_options_page(
+        'Dynamic SEO Tags', // Page title
+        'Dynamic SEO Tags', // Menu title
+        'manage_options', // Capability
+        'dynamic-seo-tags', // Menu slug
+        'dynamic_seo_tags_page' // Function that displays the options page
+    );
 }
+add_action('admin_menu', 'dynamic_seo_tags_menu');
 
 add_action('admin_init', 'dynamic_seo_tags_settings');
 
@@ -58,60 +62,101 @@ function dynamic_seo_tags_page()
 <?php
 }
 
-// Filter for Yoast SEO meta description
-add_filter('wpseo_metadesc', 'dynamic_seo_meta_description', 10, 1);
+// Initialize SEO tags with fallback
+function initialize_seo_tags() {
+    if (defined('WPSEO_VERSION')) {
+        // Yoast SEO is active, use Yoast's filters
+        add_filter('wpseo_metadesc', 'dynamic_seo_meta_description', 10, 1);
+        add_filter('wpseo_title', 'dynamic_seo_title', 10, 1);
+        add_filter('wpseo_canonical', 'dynamic_seo_canonical', 10, 1);
+        add_filter('wpseo_opengraph_title', 'dynamic_seo_og_title', 10, 1);
+        add_filter('wpseo_opengraph_desc', 'dynamic_seo_og_description', 10, 1);
+        add_filter('wpseo_opengraph_url', 'dynamic_seo_og_url', 10, 1);
+        add_filter('wpseo_twitter_title', 'dynamic_seo_twitter_title', 10, 1);
+        add_filter('wpseo_twitter_description', 'dynamic_seo_twitter_description', 10, 1);
+    } else {
+        // Yoast SEO is not active, use fallback mechanisms
+        remove_action('wp_head', 'rel_canonical');
+        add_action('wp_head', 'fallback_seo_canonical');
+        add_filter('pre_get_document_title', 'dynamic_seo_title');
+        add_action('wp_head', 'fallback_seo_meta_description');
+    }
+}
+add_action('init', 'initialize_seo_tags');
+
+// Fallback function for meta description
 function dynamic_seo_meta_description($description)
 {
     return dynamic_seo_tags_replace('description', $description);
 }
 
-// Filter for Yoast SEO title
-add_filter('wpseo_title', 'dynamic_seo_title', 10, 1);
+
 function dynamic_seo_title($title)
 {
     return dynamic_seo_tags_replace('title', $title);
 }
 
-// Filter for Yoast SEO canonical
-add_filter('wpseo_canonical', 'dynamic_seo_canonical', 10, 1);
+// Fallback function for canonical URL
 function dynamic_seo_canonical($canonical)
 {
     return dynamic_seo_tags_replace('canonical', $canonical, true);
 }
 
-// Filter for Yoast SEO OpenGraph title
-add_filter('wpseo_opengraph_title', 'dynamic_seo_og_title', 10, 1);
+// Fallback function for OpenGraph title
 function dynamic_seo_og_title($title)
 {
     return dynamic_seo_tags_replace('title', $title);
 }
 
-// Filter for Yoast SEO OpenGraph description
-add_filter('wpseo_opengraph_desc', 'dynamic_seo_og_description', 10, 1);
+// Fallback function for OpenGraph description
 function dynamic_seo_og_description($description)
 {
     return dynamic_seo_tags_replace('description', $description);
 }
 
-// Filter for Yoast SEO OpenGraph URL
-add_filter('wpseo_opengraph_url', 'dynamic_seo_og_url', 10, 1);
+// Fallback function for OpenGraph URL
 function dynamic_seo_og_url($url)
 {
     return dynamic_seo_tags_replace('url', $url, true);
 }
 
-// Filter for Yoast SEO Twitter title
-add_filter('wpseo_twitter_title', 'dynamic_seo_twitter_title', 10, 1);
+// Fallback function for Twitter title
 function dynamic_seo_twitter_title($title)
 {
     return dynamic_seo_tags_replace('title', $title);
 }
 
-// Filter for Yoast SEO Twitter description
-add_filter('wpseo_twitter_description', 'dynamic_seo_twitter_description', 10, 1);
+// Fallback function for Twitter description
 function dynamic_seo_twitter_description($description)
 {
     return dynamic_seo_tags_replace('description', $description);
+}
+
+// Fallback SEO Meta Description
+function fallback_seo_meta_description() {
+    $description = dynamic_seo_tags_replace('description', get_bloginfo('description'));
+    echo '<meta name="description" content="' . esc_attr($description) . '">' . "\n";
+}
+
+// Fallback SEO Canonical URL
+function fallback_seo_canonical() {
+    global $wp;
+
+    // Start with the full current URL
+    $current_url = home_url(add_query_arg(array(), $wp->request));
+
+    // Retrieve the SEO variable name from the options
+    $seo_variable_name = get_option('seo_variable_name');
+    if (!empty($seo_variable_name) && isset($_GET[$seo_variable_name])) {
+        // Append or modify the query parameter based on the current URL and the variable
+        $canonical_url = add_query_arg($seo_variable_name, $_GET[$seo_variable_name], $current_url);
+    } else {
+        // No specific variable is set, use the current URL
+        $canonical_url = $current_url;
+    }
+
+    // Output the canonical URL
+    echo '<link rel="canonical" href="' . esc_url($canonical_url) . '" />' . "\n";
 }
 
 // Common function to replace tags
