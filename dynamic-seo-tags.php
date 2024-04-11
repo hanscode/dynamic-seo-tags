@@ -96,3 +96,24 @@ function dynamic_seo_tags_replace($type, $content, $is_url = false) {
     }
     return $content;
 }
+
+function handle_url_param_shortcode($atts) {
+    // Define default attributes and merge with user attributes
+    $attributes = shortcode_atts(array(
+        'variable' => '', // Variable name to look for in the URL
+        'default' => '', // Default value if the variable isn't set, empty by default
+    ), $atts);
+
+    $variable_name = $attributes['variable'];
+    // Check if the variable is set in the URL, otherwise use the default value provided by the user
+    if (isset($_GET[$variable_name]) && !empty($_GET[$variable_name])) {
+        $variable_value_raw = $_GET[$variable_name];
+    } else {
+        $variable_value_raw = $attributes['default']; // Use user-defined default
+    }
+    
+    // Format the output: replace dashes with spaces and capitalize each word
+    return htmlspecialchars(ucwords(str_replace('-', ' ', $variable_value_raw)), ENT_QUOTES, 'UTF-8');
+}
+
+add_shortcode('url_param', 'handle_url_param_shortcode');
