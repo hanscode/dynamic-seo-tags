@@ -9,7 +9,8 @@
  */
 
 // Add the action to set the SEO tags
-function dynamic_seo_tags_menu() {
+function dynamic_seo_tags_menu()
+{
     add_options_page(
         'Dynamic SEO Tags', // Page title
         'Dynamic SEO Tags', // Menu title
@@ -37,6 +38,8 @@ function dynamic_seo_tags_page()
         <form method="post" action="options.php">
             <?php settings_fields('dynamic-seo-tags-options'); ?>
             <?php do_settings_sections('dynamic-seo-tags-options'); ?>
+            <?php wp_nonce_field('update_seo_settings', 'seo_settings_nonce'); ?>  <!-- Nonce field added here -->
+            <p>Use the following placeholders in the SEO Meta Description and SEO Meta Title fields to dynamically replace the content:</p>
             <table class="form-table">
                 <tr valign="top">
                     <th scope="row">Variable Name</th>
@@ -62,8 +65,24 @@ function dynamic_seo_tags_page()
 <?php
 }
 
+// When processing the form submission, verify the nonce to make sure it’s a valid request:
+add_action('admin_init', 'dynamic_seo_tags_save_settings');
+
+function dynamic_seo_tags_save_settings() {
+    // Check if the user has the necessary permissions
+    if (!current_user_can('manage_options')) {
+        wp_die('You do not have sufficient permissions to access this page.');
+    }
+
+    if (isset($_POST['seo_variable_name']) && check_admin_referer('update_seo_settings', 'seo_settings_nonce')) {
+        // Sanitize and save the settings if the nonce is valid
+        update_option('seo_variable_name', sanitize_text_field($_POST['seo_variable_name']));
+    }
+}
+
 // Initialize SEO tags with fallback
-function initialize_seo_tags() {
+function initialize_seo_tags()
+{
     if (defined('WPSEO_VERSION')) {
         // Yoast SEO is active, use Yoast's filters
         add_filter('wpseo_metadesc', 'dynamic_seo_meta_description', 10, 1);
@@ -133,13 +152,15 @@ function dynamic_seo_twitter_description($description)
 }
 
 // Fallback SEO Meta Description
-function fallback_seo_meta_description() {
+function fallback_seo_meta_description()
+{
     $description = dynamic_seo_tags_replace('description', get_bloginfo('description'));
     echo '<meta name="description" content="' . esc_attr($description) . '">' . "\n";
 }
 
 // Fallback SEO Canonical URL
-function fallback_seo_canonical() {
+function fallback_seo_canonical()
+{
     global $wp;
 
     // Start with the full current URL
@@ -164,19 +185,22 @@ function dynamic_seo_tags_replace($type, $content, $is_url = false)
 {
     $variable_name = get_option('seo_variable_name');
     if (isset($_GET[$variable_name])) {
-        $variable_value_raw = $_GET[$variable_name];
+        $variable_value_raw = sanitize_text_field($_GET[$variable_name]);  // Sanitize the raw input immediately
         // Replace dashes with spaces and capitalize each word
-        $variable_value = htmlspecialchars(ucwords(str_replace('-', ' ', $variable_value_raw)), ENT_QUOTES, 'UTF-8');
+        $variable_value = ucwords(str_replace('-', ' ', $variable_value_raw));
 
         // Decide which custom text to use based on the type
         $custom_text = ($type == 'title') ? get_option('seo_custom_title') : get_option('seo_custom_text');
 
+        $escaped_variable_value = esc_html($variable_value);  // Escape the variable value
+        $replaced_content = str_replace("[$variable_name]", $escaped_variable_value, $custom_text);  // Replace the placeholder with the escaped variable value
+
         if (!$is_url) {
-            // For description and title
-            $content = str_replace("[$variable_name]", $variable_value, $custom_text);
+            // For description and title, ensure HTML safety
+            $content = esc_html($replaced_content);
         } else {
-            // For canonical URL, append or modify the query parameter
-            $content = add_query_arg($variable_name, $variable_value_raw, $content); // Use raw value for URLs
+            // For canonical URL, safely append or modify the query parameter
+            $content = add_query_arg($variable_name, $variable_value_raw, $content);  // Ensure safe URL manipulation
         }
     }
     return $content;
@@ -193,13 +217,13 @@ function handle_url_param_shortcode($atts)
     $variable_name = sanitize_text_field($attributes['variable']);
     // Check if the variable is set in the URL, otherwise use the default value provided by the user
     if (isset($_GET[$variable_name]) && !empty($_GET[$variable_name])) {
-        $variable_value_raw = $_GET[$variable_name];
+        $variable_value_raw = sanitize_text_field($_GET[$variable_name]);
     } else {
         $variable_value_raw = sanitize_text_field($attributes['default']); // Use user-defined default
     }
 
     // Format the output: replace dashes with spaces and capitalize each word
-    return htmlspecialchars(ucwords(str_replace('-', ' ', $variable_value_raw)), ENT_QUOTES, 'UTF-8');
+    return esc_html(ucwords(str_replace('-', ' ', $variable_value_raw)), ENT_QUOTES, 'UTF-8');
 }
 
 add_shortcode('url_param', 'handle_url_param_shortcode');
