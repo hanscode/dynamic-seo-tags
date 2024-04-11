@@ -4,7 +4,8 @@
  * Plugin Name: Dynamic SEO Tags
  * Description: Dynamically set SEO meta tags based on URL parameters.
  * Version: 1.0
- * Author: Hans Steffens
+ * Author: Hans Steffens & Marketing Done Right LLC
+ * Author URI:  https://marketingdr.co
  */
 
 // Add the action to set the SEO tags
@@ -104,12 +105,12 @@ function handle_url_param_shortcode($atts) {
         'default' => '', // Default value if the variable isn't set, empty by default
     ), $atts);
 
-    $variable_name = $attributes['variable'];
+    $variable_name = sanitize_text_field($attributes['variable']);
     // Check if the variable is set in the URL, otherwise use the default value provided by the user
     if (isset($_GET[$variable_name]) && !empty($_GET[$variable_name])) {
         $variable_value_raw = $_GET[$variable_name];
     } else {
-        $variable_value_raw = $attributes['default']; // Use user-defined default
+        $variable_value_raw = sanitize_text_field($attributes['default']); // Use user-defined default
     }
     
     // Format the output: replace dashes with spaces and capitalize each word
